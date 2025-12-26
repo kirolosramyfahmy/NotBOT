@@ -1,0 +1,39 @@
+services:
+  api:
+    build: .
+    container_name: sentinel_api
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - .:/app
+      - ./evidence:/app/evidence
+    depends_on:
+      - db
+    networks:
+      - sentinel_network
+
+  db:
+    image: postgres:15-alpine
+    container_name: sentinel_db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sentinel_network
+
+volumes:
+  postgres_data:
+
+networks:
+  sentinel_network:
+    driver: bridge
